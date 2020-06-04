@@ -18,7 +18,7 @@ bl_info = {
     "blender" : (2, 83, 0),
     "version" : (0, 0, 1),
     "location" : "View3D",
-    #"warning" : "Kitsu Pipeline encountered an error",
+    "warning" : "",
     "doc_url": "https://github.com/Plyrolith/blaTools",
     "tracker_url": "https://github.com/Plyrolith/blaTools/issues",
     "category" : "Animation"
