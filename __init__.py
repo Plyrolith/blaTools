@@ -12,14 +12,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name" : "Plyro Tools",
+    "name" : "blaTools",
     "author" : "Tristan Weis",
-    "description" : "",
-    "blender" : (2, 80, 0),
+    "description" : "Additional tools to make animators' lifes easier",
+    "blender" : (2, 83, 0),
     "version" : (0, 0, 1),
-    "location" : "",
-    "warning" : "",
-    "category" : "Generic"
+    "location" : "View3D",
+    #"warning" : "Kitsu Pipeline encountered an error",
+    "doc_url": "https://github.com/Plyrolith/blaTools",
+    "tracker_url": "https://github.com/Plyrolith/blaTools/issues",
+    "category" : "Animation"
 }
 
 from . import auto_load
