@@ -1,8 +1,70 @@
 import bpy
 
-class BA_PT_pipeline_tools_anim_sceneprep(bpy.types.Panel):
+class BLATOOLS_PT_PropertiesActionObject(bpy.types.Panel):
+    """Object properties panel to select linked action"""
+    bl_label = "Action"
+    bl_idname = "OBJECT_PT_actions"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "object"
 
-    bl_category = "Animation Tools"
+    def draw(self, context):
+        obj = context.active_object
+        layout = self.layout
+        row = layout.row()
+        if obj.animation_data:
+            row.prop(obj.animation_data, "action", text="")
+        else:
+            obj_init = row.operator('object.animation_data_init', icon='ANIM_DATA')
+            obj_init.for_data = False
+
+class BLATOOLS_PT_PropertiesActionData(bpy.types.Panel):
+    """Object Data properties panel to select linked action"""
+    bl_label = "Action"
+    bl_idname = "DATA_PT_actions"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "data"
+
+    def draw(self, context):
+        data = context.active_object.data
+        layout = self.layout
+        row = layout.row()
+        if data.animation_data:
+            row.prop(data.animation_data, "action", text="")
+        else:
+            data_init = row.operator('object.animation_data_init', icon='ANIM_DATA')
+            data_init.for_data = True
+
+class BLATOOLS_PT_ItemActionsPanel(bpy.types.Panel):
+    """Viewport Actions Panel"""
+    bl_category = "Item"
+    bl_label = "Actions"
+    bl_idname = "BLATOOLS_PT_actions"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_order = 90
+
+    def draw(self, context):
+        obj = context.active_object
+        layout = self.layout
+        if obj:
+            row = layout.row()
+            if obj.animation_data:
+                row.prop(obj.animation_data, "action", text="Object")
+            else:
+                obj_init = row.operator('object.animation_data_init', text="Initialize Object Animation", icon='ANIM_DATA')
+                obj_init.for_data = False
+            row = layout.row()
+            if obj.data.animation_data:
+                row.prop(obj.data.animation_data, "action", text="Data")
+            else:
+                data_init = row.operator('object.animation_data_init', text="Initialize Data Animation", icon='ANIM_DATA')
+                data_init.for_data = True
+
+class BLATOOLS_PT_Sceneprep(bpy.types.Panel):
+
+    bl_category = "blaTools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = "Scene Preparation"
@@ -18,9 +80,9 @@ class BA_PT_pipeline_tools_anim_sceneprep(bpy.types.Panel):
         row = layout.row()
         row.operator('view3d.hide_nonproxy_rigs',text="Hide Non-proxy Rigs",icon='GHOST_ENABLED')
 
-class BA_PT_pipeline_tools_anim_performance_tools(bpy.types.Panel):
+class BLATOOLS_PT_PerformanceTools(bpy.types.Panel):
 
-    bl_category = "Animation Tools"
+    bl_category = "blaTools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = "Performance Tools"
@@ -61,9 +123,9 @@ class BA_PT_pipeline_tools_anim_performance_tools(bpy.types.Panel):
             high_all.asset_level = 'HIGH'
             high_all.selected = False
 
-class BA_PT_pipeline_tools_anim_viewport_tools(bpy.types.Panel):
+class BLATOOLS_PT_ViewportTools(bpy.types.Panel):
 
-    bl_category = "Animation Tools"
+    bl_category = "blaTools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = "Viewport Tools"
@@ -97,9 +159,9 @@ class BA_PT_pipeline_tools_anim_viewport_tools(bpy.types.Panel):
         row.operator('pose.motionpath_update',text="Update",icon='PHYSICS')
         row.operator('pose.motionpath_clear',text="Clear All",icon='PANEL_CLOSE')
 
-class BA_PT_pipeline_tools_anim_viewport_alpha(bpy.types.Panel):
+class BLATOOLS_PT_ViewportAlpha(bpy.types.Panel):
 
-    bl_category = "Animation Tools"
+    bl_category = "blaTools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = "Viewport Alpha"
@@ -123,9 +185,9 @@ class BA_PT_pipeline_tools_anim_viewport_alpha(bpy.types.Panel):
         row = box.row()
         row.operator('blatools.collection_alpha_reset',text='Reset All Alphas',icon='HIDE_OFF')
 
-class BA_PT_pipeline_tools_anim_selection_tools(bpy.types.Panel):
+class BLATOOLS_PT_SelectionTools(bpy.types.Panel):
 
-    bl_category = "Animation Tools"
+    bl_category = "blaTools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = "Selection Tools"
@@ -149,9 +211,9 @@ class BA_PT_pipeline_tools_anim_selection_tools(bpy.types.Panel):
         row = layout.row()
         row.operator('pose.orientation_parent',text="Parent Orientation",icon='ORIENTATION_LOCAL')
 
-class BA_PT_pipeline_tools_anim_selection_sets_options(bpy.types.Panel):
+class BLATOOLS_PT_SelectionSetsOptions(bpy.types.Panel):
 
-    bl_category = "Animation Tools"
+    bl_category = "blaTools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = "Selection Sets Options"
@@ -192,9 +254,9 @@ class BA_PT_pipeline_tools_anim_selection_sets_options(bpy.types.Panel):
         row = box.row()
         row.prop(blatools, 'selection_sets_make_active', text="Activate")
 
-class BA_PT_pipeline_tools_anim_selection_sets(bpy.types.Panel):
+class BLATOOLS_PT_SelectionSets(bpy.types.Panel):
 
-    bl_category = "Animation Tools"
+    bl_category = "blaTools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = "Selection Sets"

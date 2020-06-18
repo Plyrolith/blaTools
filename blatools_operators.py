@@ -2,7 +2,7 @@ import bpy
 
 from . import blatools as bla
 
-class BA_OT_HideNonProxyRigs(bpy.types.Operator):
+class BLATOOLS_OT_HideNonProxyRigs(bpy.types.Operator):
     """Temporarily Hide all non-Proxy Rigs"""
     bl_idname = 'view3d.hide_nonproxy_rigs'
     bl_label = "Hide non-Proxy Rigs"
@@ -16,7 +16,7 @@ class BA_OT_HideNonProxyRigs(bpy.types.Operator):
         bla.hide_noneproxy_rigs(context)
         return {"FINISHED"}
 
-class BA_OT_CameraPassepartoutSet(bpy.types.Operator):
+class BLATOOLS_OT_CameraPassepartoutSet(bpy.types.Operator):
     """Set Passepartout of active camera"""
     bl_idname = 'view3d.camera_passepartout_set'
     bl_label = "Set Passepartout"
@@ -32,7 +32,7 @@ class BA_OT_CameraPassepartoutSet(bpy.types.Operator):
         bla.camera_passepartout_set(context, self.alpha)
         return {"FINISHED"}
 
-class BA_OT_MotionpathAuto(bpy.types.Operator):
+class BLATOOLS_OT_MotionpathAuto(bpy.types.Operator):
     """Create Motion Path for Selected Bones"""
     bl_idname = 'pose.motionpath_auto'
     bl_label = "Create Motion Path for Selected Bones"
@@ -46,7 +46,7 @@ class BA_OT_MotionpathAuto(bpy.types.Operator):
         bla.motionpaths_auto(context)
         return {"FINISHED"}
 
-class BA_OT_MotionpathUpdate(bpy.types.Operator):
+class BLATOOLS_OT_MotionpathUpdate(bpy.types.Operator):
     """Update Motion Paths"""
     bl_idname = 'pose.motionpath_update'
     bl_label = "Update Motion Paths"
@@ -66,7 +66,7 @@ class BA_OT_MotionpathUpdate(bpy.types.Operator):
             bpy.ops.object.paths_update()
         return {"FINISHED"}
 
-class BA_OT_MotionpathClear(bpy.types.Operator):
+class BLATOOLS_OT_MotionpathClear(bpy.types.Operator):
     """Clear all Motion Paths"""
     bl_idname = 'pose.motionpath_clear'
     bl_label = "Clear all Motion Paths"
@@ -83,7 +83,7 @@ class BA_OT_MotionpathClear(bpy.types.Operator):
             bpy.ops.object.paths_clear()
         return {"FINISHED"}
 
-class BA_OT_SceneObjectsLock(bpy.types.Operator):
+class BLATOOLS_OT_SceneObjectsLock(bpy.types.Operator):
     """Lock all object transforms for current scene"""
     bl_idname = 'view3d.scene_objects_lock'
     bl_label = "Lock All Object Transforms (Current Scene)"
@@ -99,7 +99,7 @@ class BA_OT_SceneObjectsLock(bpy.types.Operator):
         bla.scene_objects_lock(context.scene, self.lock)
         return {"FINISHED"}
 
-class BA_OT_AssetLevelSet(bpy.types.Operator):
+class BLATOOLS_OT_AssetLevelSet(bpy.types.Operator):
     """Set detail level of linked assets"""
     bl_idname = 'view3d.asset_level_set'
     bl_label = "Set Asset Level"
@@ -116,7 +116,7 @@ class BA_OT_AssetLevelSet(bpy.types.Operator):
         bla.asset_level_set(context, self.asset_level, self.selected)
         return {"FINISHED"}
 
-class BA_OT_CollectionAlphaSelect(bpy.types.Operator):
+class BLATOOLS_OT_CollectionAlphaSelect(bpy.types.Operator):
     """Select collection for viewport alpha manipulation"""
     bl_idname = 'blatools.collection_alpha_select'
     bl_label = "Select Collection for Viewport Alpha"
@@ -145,7 +145,7 @@ class BA_OT_CollectionAlphaSelect(bpy.types.Operator):
         context.window_manager.invoke_search_popup(self)
         return {'FINISHED'}
 
-class BA_OT_CollectionAlphaReset(bpy.types.Operator):
+class BLATOOLS_OT_CollectionAlphaReset(bpy.types.Operator):
     """Reset viewport alpha for all collections"""
     bl_idname = 'blatools.collection_alpha_reset'
     bl_label = "Reset All Collection Viewport Alphas"
@@ -155,7 +155,7 @@ class BA_OT_CollectionAlphaReset(bpy.types.Operator):
         bla.collection_alpha_reset(context)
         return {"FINISHED"}
 
-class BA_OT_SelectionSetSelect(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetSelect(bpy.types.Operator):
     """Select bones from selection set"""
     bl_idname = 'pose.selection_sets_select'
     bl_label = "Select Selection Set Bones"
@@ -189,7 +189,7 @@ class BA_OT_SelectionSetSelect(bpy.types.Operator):
         self.report({'INFO'}, report)
         return {"FINISHED"}
 
-class BA_OT_SelectionSetList(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetList(bpy.types.Operator):
     """List bones from selection set"""
     bl_idname = 'blatools.selection_sets_list'
     bl_label = "List Selection Set Bones"
@@ -207,7 +207,7 @@ class BA_OT_SelectionSetList(bpy.types.Operator):
         context.window_manager.popup_menu(draw, title="Bones in Set:", icon='GROUP_BONE')
         return {"FINISHED"}
 
-class BA_OT_SelectionSetCreate(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetCreate(bpy.types.Operator):
     """Create selection set from selected bones"""
     bl_idname = 'blatools.selection_sets_create'
     bl_label = "Create Selection Set"
@@ -236,7 +236,7 @@ class BA_OT_SelectionSetCreate(bpy.types.Operator):
         bla.ui_redraw()
         return {"FINISHED"}
 
-class BA_OT_SelectionSetDelete(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetDelete(bpy.types.Operator):
     """Delete selection set"""
     bl_idname = 'blatools.selection_sets_delete'
     bl_label = "Delete Selection Set"
@@ -249,7 +249,7 @@ class BA_OT_SelectionSetDelete(bpy.types.Operator):
         bla.ui_redraw()
         return {"FINISHED"}
 
-class BA_OT_SelectionSetIcon(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetIcon(bpy.types.Operator):
     """Set icon for new selection sets"""
     bl_idname = 'blatools.selection_sets_icon'
     bl_label = "Set Icon for New Selection Sets"
@@ -263,7 +263,7 @@ class BA_OT_SelectionSetIcon(bpy.types.Operator):
         bla.ui_redraw()
         return {"FINISHED"}
 
-class BA_OT_SelectionSetFilter(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetFilter(bpy.types.Operator):
     """Set selection set filter object"""
     bl_idname = 'blatools.selection_sets_filter'
     bl_label = "Set Selection Set Filter"
@@ -274,7 +274,7 @@ class BA_OT_SelectionSetFilter(bpy.types.Operator):
         rigs = [
             ('SOURCE', 'Source Rig', 'Source Rig', 'HEART', 0),
             ('ACTIVE', 'Active Rig', 'Active Rig', 'OUTLINER_OB_ARMATURE', 1),
-            ('ALL', 'All Rigs', 'All Rigs', 'ORIENTATION_GLOBAL', 2)
+            ('ALL', 'All Rigs', 'All Rigs', 'ORIENTATION_GLOBTL', 2)
         ]
         for i, obj in enumerate(context.scene.objects):
             if obj.type == 'ARMATURE':
@@ -293,7 +293,7 @@ class BA_OT_SelectionSetFilter(bpy.types.Operator):
         context.window_manager.invoke_search_popup(self)
         return {'FINISHED'}
 
-class BA_OT_SelectionSetNameClear(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetNameClear(bpy.types.Operator):
     """Clear new name field for selection sets"""
     bl_idname = 'blatools.selection_sets_name_clear'
     bl_label = "Clear Selection Set New Name Field"
@@ -304,7 +304,7 @@ class BA_OT_SelectionSetNameClear(bpy.types.Operator):
         blatools.selection_sets_new_name = ""
         return {"FINISHED"}
 
-class BA_OT_SelectionSetReorder(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetReorder(bpy.types.Operator):
     """Reorder selection set"""
     bl_idname = 'blatools.selection_sets_reorder'
     bl_label = "Reorder Selection Set"
@@ -317,7 +317,7 @@ class BA_OT_SelectionSetReorder(bpy.types.Operator):
         bla.selection_sets_reorder(context, self.up, self.position)
         return {"FINISHED"}
 
-class BA_OT_SelectionSetUpdate(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetUpdate(bpy.types.Operator):
     """Update selection set"""
     bl_idname = 'blatools.selection_sets_update'
     bl_label = "Update Selection Set"
@@ -337,7 +337,7 @@ class BA_OT_SelectionSetUpdate(bpy.types.Operator):
         bla.ui_redraw()
         return {"FINISHED"}
 
-class BA_OT_SelectionSetUpdateIcon(bpy.types.Operator):
+class BLATOOLS_OT_SelectionSetUpdateIcon(bpy.types.Operator):
     """Update selection set icon"""
     bl_idname = 'blatools.selection_sets_update_icon'
     bl_label = "Update Selection Set Icon"
@@ -351,7 +351,7 @@ class BA_OT_SelectionSetUpdateIcon(bpy.types.Operator):
         bla.ui_redraw()
         return {"FINISHED"}
 
-class BA_OT_ArmaturesPoseToggle(bpy.types.Operator):
+class BLATOOLS_OT_ArmaturesPoseToggle(bpy.types.Operator):
     """Toggle between active/all Armatures in Pose Mode"""
     bl_idname = 'pose.armatures_pose_toggle'
     bl_label = "Toggle Active/all Armatures"
@@ -370,7 +370,7 @@ class BA_OT_ArmaturesPoseToggle(bpy.types.Operator):
         )
         return {"FINISHED"}
 
-class BA_OT_CameraGuidesSet(bpy.types.Operator):
+class BLATOOLS_OT_CameraGuidesSet(bpy.types.Operator):
     """Set scene camera guides"""
     bl_idname = 'view3d.camera_guides_set'
     bl_label = "Set Scene Camera Guides"
@@ -408,7 +408,7 @@ class BA_OT_CameraGuidesSet(bpy.types.Operator):
         context.window_manager.invoke_search_popup(self)
         return {'FINISHED'}
 
-class BA_OT_CameraBackgroundImages(bpy.types.Operator):
+class BLATOOLS_OT_CameraBackgroundImages(bpy.types.Operator):
     """Set scene camera guides"""
     bl_idname = 'view3d.camera_background_images'
     bl_label = "Show/Hide Scene Camera Background Images"
@@ -424,7 +424,7 @@ class BA_OT_CameraBackgroundImages(bpy.types.Operator):
         bla.camera_get(context).show_background_images = self.show_background_images
         return {"FINISHED"}
 
-class BA_OT_OrientationParent(bpy.types.Operator):
+class BLATOOLS_OT_OrientationParent(bpy.types.Operator):
     """Create custom orientation based on active object's/bone's parent"""
     bl_idname = 'pose.orientation_parent'
     bl_label = "Orientation to Parent"
@@ -439,4 +439,24 @@ class BA_OT_OrientationParent(bpy.types.Operator):
 
     def execute(self, context):
         bla.orientation_parent(context)
+        return {"FINISHED"}
+
+class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
+    """Initialize animation data for active object"""
+    bl_idname = 'object.animation_data_init'
+    bl_label = "Initialize Animation Data"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    for_data: bpy.props.BoolProperty(name="Object Data", default=False)
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object
+
+    def execute(self, context):
+        if self.for_data:
+            item = context.active_object.data
+        else:
+            item = context.active_object
+        item.animation_data_create()
         return {"FINISHED"}
