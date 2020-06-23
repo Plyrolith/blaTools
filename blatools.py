@@ -2,6 +2,7 @@ import bpy
 import copy
 import re
 import unicodedata
+import mathutils
 
 def ui_redraw():
     """Forces blender to redraw its UI.
@@ -35,18 +36,20 @@ def string_clean(string, dot=False):
     tmpstring = re.sub(allowed, '_', tmpstring).lower().lstrip("_").rstrip("_")
     return re.sub('\_\_+', '*', tmpstring)
 
-def hide_noneproxy_rigs(context):
+def hide_noneproxy_rigs(context, hide=True):
     for obj in context.scene.objects:
         if obj.type == 'ARMATURE':
             if obj.library:
-                obj.hide_viewport = True
+                obj.hide_viewport = hide
 
 def camera_get(context):
     space = context.space_data
     if space.use_local_camera and space.camera and space.camera.type == 'CAMERA':
         cam = space.camera.data
-    else:
+    elif context.scene.camera:
         cam = context.scene.camera.data
+    else:
+        cam = None
     return cam
 
 def camera_passepartout_set(context, alpha):
@@ -97,8 +100,8 @@ def camera_guides_set(context, guide):
         else:
             cam.show_composition_harmony_tri_a = True
 
-def motionpaths_auto(context):
-    if context.scene.use_preview_range:
+def motionpaths_auto(context, use_tails=False, use_preview_range=True):
+    if use_preview_range and context.scene.use_preview_range:
         start = context.scene.frame_preview_start
         end = context.scene.frame_preview_end
     else:
@@ -108,13 +111,131 @@ def motionpaths_auto(context):
         bpy.ops.pose.paths_calculate(
             start_frame=start,
             end_frame=end,
-            bake_location='TAILS'
+            bake_location='TAILS' if use_tails else 'HEADS'
         )
     else:
         bpy.ops.object.paths_calculate(
             start_frame=start,
-            end_frame=end,
+            end_frame=end
         )
+
+def transform_store(
+            context,
+            target='CURSOR',
+            keyframes=False,
+            range_min=1,
+            range_max=250,
+            trail=False
+        ):
+    blatools = context.window_manager.blatools
+    scene = context.scene
+    obj = context.active_object
+    name = obj.name
+    pose = True if context.mode == 'POSE' else False
+
+    # Pose bone or object
+    if pose and context.active_pose_bone:
+        source = context.active_pose_bone
+        name += "_" + source.name
+        matrix = source.matrix
+    else:
+        source = obj
+        matrix = source.matrix_world
+
+    # Copy
+    if target == 'STORE':
+        index = 0
+        for v in matrix:
+            for f in v:
+                blatools.transform_tmp[index] = f
+                index += 1
+
+    # Cursor
+    if target == 'CURSOR':
+        scene.cursor.matrix = matrix
+    
+    # Empty
+    elif target == 'EMPTY':
+
+        # Keyframes
+        keys = []
+        if keyframes and hasattr(obj.animation_data, 'action') and obj.animation_data.action:
+            action = obj.animation_data.action
+            keys = []
+            for fc in action.fcurves:
+                if fc.data_path.endswith('location') or fc.data_path.endswith('rotation') or fc.data_path.endswith('scale'):
+                    for kp in fc.keyframe_points:
+                        f = int(kp.co[0])
+                        if f <= range_max and f >= range_min and f not in keys:
+                            keys.append(kp.co[0])
+
+            # Trail
+            if trail:
+                frame_current = scene.frame_current
+                for f in keys:
+                    scene.frame_set(f)
+                    empty = bpy.data.objects.new('TRF-' + name + "_f" + str(int(f)).zfill(4), None)
+                    scene.collection.objects.link(empty)
+                    empty.matrix_world = source.matrix if pose else source.matrix_world
+                    empty["blatools_transform"] = 1
+                scene.frame_set(frame_current)
+
+            # No Trail
+            else:
+                empty = bpy.data.objects.new('TRF-' + name, None)
+                scene.collection.objects.link(empty)
+                empty["blatools_transform"] = 1
+
+                # Keyframes Action
+                if len(keys) > 1:
+                    group = 'Object Transforms'
+                    frame_current = scene.frame_current
+                    for f in keys:
+                        scene.frame_set(f)
+                        empty.matrix_world = source.matrix if pose else source.matrix_world
+                        empty.keyframe_insert('location', frame=f, group=group)
+                        empty.keyframe_insert('rotation_euler', frame=f, group=group)
+                        empty.keyframe_insert('scale', frame=f, group=group)
+                    scene.frame_set(frame_current)
+            
+        # Simple empty
+        else:
+            empty = bpy.data.objects.new('TRF-' + name, None)
+            scene.collection.objects.link(empty)
+            empty.matrix_world = source.matrix if pose else source.matrix_world
+
+# APPLY BONE CONSTRAINGS + OBJECT TRANSFORMS
+def transform_apply(context, source):
+    blatools = context.window_manager.blatools
+    pose = True if context.mode == 'POSE' else False
+
+    # Pose bone or object
+    if pose and context.active_pose_bone:
+        target = context.active_pose_bone
+    else:
+        target = context.active_object
+    
+    # Store
+    if source == 'STORE':
+        m = mathutils.Matrix()
+        t = blatools.transform_tmp
+        c = 0
+        while c < 16:
+            col = int(c / 4)
+            row = int(c % 4)
+            m[col][row] = t[c]
+            c += 1
+        if pose:
+            target.matrix = m
+        else:
+            target.matrix_world = m
+
+    # Cursor
+    elif source == 'CURSOR':
+        if pose:
+            target.matrix = context.scene.cursor.matrix
+        else:
+            target.matrix_world = context.scene.cursor.matrix
 
 def scene_objects_lock(scene, lock=True):
     for obj in scene.objects:
@@ -208,7 +329,7 @@ def asset_level_set(context, asset_level, selected=True):
                 collections_exclude(lay_col,mid+".mid",True)
                 collections_exclude(lay_col,mid+".high",False)
 
-def selection_sets_select(context, position, clear=False, deselect=False):
+def selection_sets_select(context, position, select=True, clear=False):
     blatools = context.window_manager.blatools
     missing_list = []
     set_used = None
@@ -243,8 +364,8 @@ def selection_sets_select(context, position, clear=False, deselect=False):
             for bone in set_used['bones']:
                 bone_name = dict(bone)['name']
                 if bone_name in arma.bones:
-                    arma.bones[bone_name].select = not deselect
-                    if blatools.selection_sets_make_active == 'SET' and dict(bone)['active']:
+                    arma.bones[bone_name].select = select
+                    if select and blatools.selection_sets_make_active == 'SET' and dict(bone)['active']:
                         arma.bones.active = arma.bones[bone_name]
                 else:
                     missing_list.append(arma.name + ": " + bone_name)

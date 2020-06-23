@@ -32,6 +32,11 @@ class blaToolsSettings(bpy.types.PropertyGroup):
     collection_alpha: bpy.props.FloatProperty(name="Collection Alpha",min=0.0, max=1.0, default=1.0, soft_min=0.0, soft_max=1.0, update=bla.collection_alpha_set)
     armature_toggle_hide: bpy.props.BoolProperty(default=True, name="Hide Other Armatures")
     armature_toggle_selection: bpy.props.BoolProperty(default=True, name="Toggle Selection Only")
+    transform_tmp: bpy.props.FloatVectorProperty(
+        name='Transform Store',
+        description='Temporary Transform Matrix Storage',
+        size=16
+    )
 
 bpy.utils.register_class(blaToolsSettings)
 bpy.types.WindowManager.blatools = bpy.props.PointerProperty(type=blaToolsSettings, name="blaTools")

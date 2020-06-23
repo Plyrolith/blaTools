@@ -8,12 +8,14 @@ class BLATOOLS_OT_HideNonProxyRigs(bpy.types.Operator):
     bl_label = "Hide non-Proxy Rigs"
     bl_options = {'UNDO'}
     
+    hide: bpy.props.BoolProperty(name='Hide', default=True)
+
     @classmethod
     def poll(cls, context):
         return bpy.data.libraries
 
     def execute(self, context):
-        bla.hide_noneproxy_rigs(context)
+        bla.hide_noneproxy_rigs(context, self.hide)
         return {"FINISHED"}
 
 class BLATOOLS_OT_CameraPassepartoutSet(bpy.types.Operator):
@@ -32,56 +34,113 @@ class BLATOOLS_OT_CameraPassepartoutSet(bpy.types.Operator):
         bla.camera_passepartout_set(context, self.alpha)
         return {"FINISHED"}
 
-class BLATOOLS_OT_MotionpathAuto(bpy.types.Operator):
-    """Create Motion Path for Selected Bones"""
-    bl_idname = 'pose.motionpath_auto'
-    bl_label = "Create Motion Path for Selected Bones"
+class BLATOOLS_OT_TransformStore(bpy.types.Operator):
+    """Store World Transforms for active Pose Bone or Object"""
+    bl_idname = 'object.transform_store'
+    bl_label = "Store Transforms"
     bl_options = {'REGISTER', 'UNDO'}
+
+    target: bpy.props.EnumProperty(
+        name="Target",
+        items=[
+            ('STORE', "Store", "Store"),
+            ('CURSOR', "Cursor", "Cursor"),
+            ('EMPTY', "Empty", "Empty")
+        ],
+        default='STORE'
+    )
+    keyframes: bpy.props.BoolProperty(name="Follow Keyframes", default=False)
+    range_min: bpy.props.IntProperty(name="Start", default=1)
+    range_max: bpy.props.IntProperty(name="End", default=250)
+    trail: bpy.props.BoolProperty(name="Create Trail", default=False)
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_pose_bone or context.active_object
+
+    def execute(self, context):
+        bla.transform_store(
+            context,
+            self.target,
+            self.keyframes,
+            self.range_min,
+            self.range_max,
+            self.trail
+        )
+        bla.ui_redraw()
+        return {"FINISHED"}
+    
+    def draw(self, context):
+        layout = self.layout
+        layout.row().prop(self, 'target', expand=True)
+        row = layout.row()
+        row.prop(self, 'keyframes', icon='DECORATE_KEYFRAME', expand=True)
+        if not self.target == 'EMPTY':
+            row.enabled = False
+        split = layout.split(align=True)
+        row = split.row(align=True)
+        row.prop(self, 'range_min')
+        if not self.target == 'EMPTY' or not self.keyframes:
+            row.enabled = False
+        row = split.row(align=True)
+        row.prop(self, 'range_max')
+        if not self.target == 'EMPTY' or not self.keyframes:
+            row.enabled = False
+        row = layout.row(align=True)
+        row.prop(self, 'trail')
+        if not self.target == 'EMPTY' or not self.keyframes:
+            row.enabled = False
+
+class BLATOOLS_OT_TransformApply(bpy.types.Operator):
+    """Apply World Transforms to active Pose Bone or Object"""
+    bl_idname = 'object.transform_apply'
+    bl_label = "Apply Transforms"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    source: bpy.props.EnumProperty(
+        name="Source",
+        items=[
+            ('STORE', "Stored", "Stored"),
+            ('CURSOR', "Cursor", "Cursor")
+            #('SELECTION', "Selection", "Selection")
+        ],
+        default='STORE'
+    )
+    @classmethod
+    def poll(cls, context):
+        return context.active_pose_bone or context.active_object
+
+    def execute(self, context):
+        bla.transform_apply(context, self.source)
+        return {"FINISHED"}
+    
+    def draw(self, context):
+        layout = self.layout
+        layout.row().prop(self, 'source', expand=True)
+
+class BLATOOLS_OT_MotionpathAuto(bpy.types.Operator):
+    """Automatically create motion path for bones or objects"""
+    bl_idname = 'pose.motionpath_auto'
+    bl_label = "Auto Motion Path"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    use_tails: bpy.props.BoolProperty(name="Use Tails")
+    use_preview_range: bpy.props.BoolProperty(name="Use Preview Range", default=True)
 
     @classmethod
     def poll(cls, context):
         return context.selected_pose_bones or context.selected_objects
 
     def execute(self, context):
-        bla.motionpaths_auto(context)
+        bla.motionpaths_auto(context, self.use_tails, self.use_preview_range)
         return {"FINISHED"}
-
-class BLATOOLS_OT_MotionpathUpdate(bpy.types.Operator):
-    """Update Motion Paths"""
-    bl_idname = 'pose.motionpath_update'
-    bl_label = "Update Motion Paths"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
+    
+    def draw(self, context):
+        layout = self.layout
         if context.mode == 'POSE':
-            return any(bone.motion_path for bone in context.selected_pose_bones)
-        else:
-            return any(obj.motion_path for obj in context.selected_objects)
-
-    def execute(self, context):
-        if context.mode == 'POSE':
-            bpy.ops.pose.paths_update()
-        else:
-            bpy.ops.object.paths_update()
-        return {"FINISHED"}
-
-class BLATOOLS_OT_MotionpathClear(bpy.types.Operator):
-    """Clear all Motion Paths"""
-    bl_idname = 'pose.motionpath_clear'
-    bl_label = "Clear all Motion Paths"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        return context.scene.objects
-
-    def execute(self, context):
-        if context.mode == 'POSE':
-            bpy.ops.pose.paths_clear()
-        else:
-            bpy.ops.object.paths_clear()
-        return {"FINISHED"}
+            layout.row().prop(self, 'use_tails')
+        if context.scene.use_preview_range:
+            layout.row().prop(self, 'use_preview_range')
 
 class BLATOOLS_OT_SceneObjectsLock(bpy.types.Operator):
     """Lock all object transforms for current scene"""
@@ -159,11 +218,11 @@ class BLATOOLS_OT_SelectionSetSelect(bpy.types.Operator):
     """Select bones from selection set"""
     bl_idname = 'pose.selection_sets_select'
     bl_label = "Select Selection Set Bones"
-    bl_options = {'UNDO'}
+    bl_options = {'UNDO', 'REGISTER'}
 
     position: bpy.props.IntProperty(name="Position")
+    select: bpy.props.BoolProperty(name="Select", default=True)
     clear: bpy.props.BoolProperty(name="New Selection", default=False)
-    deselect: bpy.props.BoolProperty(name="Deselect", default=False)
 
     @classmethod
     def poll(cls, context):
@@ -174,8 +233,8 @@ class BLATOOLS_OT_SelectionSetSelect(bpy.types.Operator):
         sel_set = bla.selection_sets_select(
             context,
             self.position,
-            self.clear,
-            self.deselect
+            self.select,
+            self.clear
         )
         if sel_set[1] and blatools.selection_sets_warnings:
             def draw(self, context):
@@ -378,8 +437,8 @@ class BLATOOLS_OT_CameraGuidesSet(bpy.types.Operator):
     bl_property = "enum_camguides"
 
     def camguides(self, context):
-        if context.scene.camera:
-            cam = context.scene.camera.data
+        cam = bla.camera_get(context)
+        if cam:
             guides = [
                 ('SHOW_COMPOSITION_CENTER', "Center", "Center", ('CHECKBOX_DEHLT' if not cam.show_composition_center else 'CHECKBOX_HLT'), 0),
                 ('SHOW_COMPOSITION_CENTER_DIAGONAL', "Center Diagonal", "Center Diagonal", ('CHECKBOX_DEHLT' if not cam.show_composition_center_diagonal else 'CHECKBOX_HLT'), 1),
@@ -394,7 +453,7 @@ class BLATOOLS_OT_CameraGuidesSet(bpy.types.Operator):
             guides = [("","","")]
         return guides
     
-    enum_camguides: bpy.props.EnumProperty(name="Guides4",items=camguides)
+    enum_camguides: bpy.props.EnumProperty(name="Guides", items=camguides)
 
     @classmethod
     def poll(cls, context):
@@ -412,13 +471,13 @@ class BLATOOLS_OT_CameraBackgroundImages(bpy.types.Operator):
     """Set scene camera guides"""
     bl_idname = 'view3d.camera_background_images'
     bl_label = "Show/Hide Scene Camera Background Images"
-    bl_options = {'UNDO'}
+    bl_options = {'UNDO', 'INTERNAL'}
 
     show_background_images: bpy.props.BoolProperty(name="Show Background Images", default=True)
 
     @classmethod
     def poll(cls, context):
-        return context.scene.camera
+        return bla.camera_get(context)
 
     def execute(self, context):
         bla.camera_get(context).show_background_images = self.show_background_images
@@ -448,6 +507,7 @@ class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     for_data: bpy.props.BoolProperty(name="Object Data", default=False)
+    clear: bpy.props.BoolProperty(name="Clear", default=False)
 
     @classmethod
     def poll(cls, context):
@@ -458,5 +518,8 @@ class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
             item = context.active_object.data
         else:
             item = context.active_object
-        item.animation_data_create()
+        if self.clear:
+            item.animation_data_clear()
+        else:
+            item.animation_data_create()
         return {"FINISHED"}
