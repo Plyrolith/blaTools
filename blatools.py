@@ -119,6 +119,10 @@ def motionpaths_auto(context, use_tails=False, use_preview_range=True):
             end_frame=end
         )
 
+################################
+## FCURVE CHECK FOR BONE NAME ##
+################################
+
 def transform_store(
             context,
             target='CURSOR',
@@ -131,28 +135,28 @@ def transform_store(
     scene = context.scene
     obj = context.active_object
     name = obj.name
-    pose = True if context.mode == 'POSE' else False
+    if context.mode == 'POSE' and context.active_pose_bone:
+        name += "_" + context.active_pose_bone.name
 
-    # Pose bone or object
-    if pose and context.active_pose_bone:
-        source = context.active_pose_bone
-        name += "_" + source.name
-        matrix = source.matrix
-    else:
-        source = obj
-        matrix = source.matrix_world
+    def matrix(context):
+        obj = context.active_object
+        matrix_obj = mathutils.Matrix(obj.matrix_world)
+        if context.mode == 'POSE' and context.active_pose_bone:
+            return matrix_obj @ context.active_pose_bone.matrix
+        else:
+            return matrix_obj
 
     # Copy
     if target == 'STORE':
         index = 0
-        for v in matrix:
+        for v in matrix(context):
             for f in v:
                 blatools.transform_tmp[index] = f
                 index += 1
 
     # Cursor
     if target == 'CURSOR':
-        scene.cursor.matrix = matrix
+        scene.cursor.matrix = matrix(context)
     
     # Empty
     elif target == 'EMPTY':
@@ -176,7 +180,7 @@ def transform_store(
                     scene.frame_set(f)
                     empty = bpy.data.objects.new('TRF-' + name + "_f" + str(int(f)).zfill(4), None)
                     scene.collection.objects.link(empty)
-                    empty.matrix_world = source.matrix if pose else source.matrix_world
+                    empty.matrix_world = matrix(context)
                     empty["blatools_transform"] = 1
                 scene.frame_set(frame_current)
 
@@ -192,7 +196,7 @@ def transform_store(
                     frame_current = scene.frame_current
                     for f in keys:
                         scene.frame_set(f)
-                        empty.matrix_world = source.matrix if pose else source.matrix_world
+                        empty.matrix_world = matrix(context)
                         empty.keyframe_insert('location', frame=f, group=group)
                         empty.keyframe_insert('rotation_euler', frame=f, group=group)
                         empty.keyframe_insert('scale', frame=f, group=group)
@@ -202,19 +206,45 @@ def transform_store(
         else:
             empty = bpy.data.objects.new('TRF-' + name, None)
             scene.collection.objects.link(empty)
-            empty.matrix_world = source.matrix if pose else source.matrix_world
+            empty.matrix_world = matrix(context)
 
-# APPLY BONE CONSTRAINGS + OBJECT TRANSFORMS
+#####################################################
+## OBJECT CONSTRAINTS? SELEKTOR, MULTI FRAME APPLY ##
+#####################################################
+
 def transform_apply(context, source):
     blatools = context.window_manager.blatools
-    pose = True if context.mode == 'POSE' else False
 
-    # Pose bone or object
-    if pose and context.active_pose_bone:
-        target = context.active_pose_bone
-    else:
-        target = context.active_object
-    
+    def apply(context, m):
+        if context.mode == 'POSE' and context.active_pose_bone:
+            b = context.active_pose_bone
+
+            # Object matrix
+            matrix_obj = mathutils.Matrix(context.active_object.matrix_world)
+
+            # Bone rest matrix
+            matrix_orig = mathutils.Matrix(b.bone.matrix_local)
+            matrix_orig.resize_4x4()
+
+            # Current absolute pose transform matrix
+            matrix = mathutils.Matrix(b.matrix)
+
+            # Local bone transforms
+            matrix_basis = mathutils.Matrix(b.matrix_basis)
+
+            # Calculate ONLY transforms (+ parenting) in world
+            matrix_transforms = matrix_orig @ matrix_basis
+
+            # Calculate ONLY constraints matrix
+            matrix_constraints = matrix @ matrix_transforms.inverted()
+
+            # Apply all matrices for new transforms
+            m_applied = matrix_constraints.inverted() @ matrix_obj.inverted() @ m
+
+            context.active_pose_bone.matrix = m_applied
+        else:
+            context.active_object.matrix_world = m
+
     # Store
     if source == 'STORE':
         m = mathutils.Matrix()
@@ -225,17 +255,11 @@ def transform_apply(context, source):
             row = int(c % 4)
             m[col][row] = t[c]
             c += 1
-        if pose:
-            target.matrix = m
-        else:
-            target.matrix_world = m
+        apply(context, m)
 
     # Cursor
     elif source == 'CURSOR':
-        if pose:
-            target.matrix = context.scene.cursor.matrix
-        else:
-            target.matrix_world = context.scene.cursor.matrix
+        apply(context, context.scene.cursor.matrix) 
 
 def scene_objects_lock(scene, lock=True):
     for obj in scene.objects:
