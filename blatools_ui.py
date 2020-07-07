@@ -255,7 +255,7 @@ class BLATOOLS_PT_TransformHelpers(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         row.operator('object.transform_store', icon='ORIENTATION_CURSOR')
-        row.operator('object.transform_apply', icon='GIZMO')
+        row.operator('object.transform_paste', icon='GIZMO')
 
 class BLATOOLS_PT_ViewportAlpha(bpy.types.Panel):
 
