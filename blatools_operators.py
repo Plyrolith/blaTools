@@ -503,7 +503,7 @@ class BLATOOLS_OT_OrientationParent(bpy.types.Operator):
 class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
     """Initialize animation data for active object"""
     bl_idname = 'object.animation_data_init'
-    bl_label = "Initialize Animation Data"
+    bl_label = "This will delete all actions and drivers. Continue?"
     bl_options = {'REGISTER', 'UNDO'}
 
     for_data: bpy.props.BoolProperty(name="Object Data", default=False)
@@ -512,6 +512,13 @@ class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         return context.active_object
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        if self.clear:
+            return wm.invoke_confirm(self, event)
+        else:
+            return self.execute(context)
 
     def execute(self, context):
         if self.for_data:
