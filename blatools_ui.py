@@ -22,7 +22,7 @@ class BLATOOLS_PT_PropertiesActionObject(bpy.types.Panel):
                 obj_clear.for_data = False
                 obj_clear.clear = True
         else:
-            obj_init = row.operator('object.animation_data_init', icon='ANIM_DATA')
+            obj_init = row.operator('object.animation_data_init', text="Initialize Animation Data", icon='ANIM_DATA')
             obj_init.for_data = False
             obj_init.clear = False
 
@@ -50,7 +50,7 @@ class BLATOOLS_PT_PropertiesActionData(bpy.types.Panel):
                 data_clear.for_data = True
                 data_clear.clear = True
         else:
-            data_init = row.operator('object.animation_data_init', icon='ANIM_DATA')
+            data_init = row.operator('object.animation_data_init', text="Initialize Animation Data", icon='ANIM_DATA')
             data_init.for_data = True
             data_init.clear = False
 
