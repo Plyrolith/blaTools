@@ -91,10 +91,10 @@ class BLATOOLS_OT_TransformStore(bpy.types.Operator):
         if not self.target == 'EMPTY' or not self.keyframes:
             row.enabled = False
 
-class BLATOOLS_OT_TransformApply(bpy.types.Operator):
-    """Apply World Transforms to active Pose Bone or Object"""
-    bl_idname = 'object.transform_apply'
-    bl_label = "Apply Transforms"
+class BLATOOLS_OT_TransformPaste(bpy.types.Operator):
+    """Paste World Transforms to active Pose Bone or Object"""
+    bl_idname = 'object.transform_paste'
+    bl_label = "Paste Transforms"
     bl_options = {'REGISTER', 'UNDO'}
 
     source: bpy.props.EnumProperty(
@@ -111,7 +111,7 @@ class BLATOOLS_OT_TransformApply(bpy.types.Operator):
         return context.active_pose_bone or context.active_object
 
     def execute(self, context):
-        bla.transform_apply(context, self.source)
+        bla.transform_paste(context, self.source)
         return {"FINISHED"}
     
     def draw(self, context):
@@ -503,7 +503,7 @@ class BLATOOLS_OT_OrientationParent(bpy.types.Operator):
 class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
     """Initialize animation data for active object"""
     bl_idname = 'object.animation_data_init'
-    bl_label = "Initialize Animation Data"
+    bl_label = "This will delete all actions and drivers. Continue?"
     bl_options = {'REGISTER', 'UNDO'}
 
     data: bpy.props.EnumProperty(
@@ -521,6 +521,13 @@ class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         return context.active_object
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        if self.clear:
+            return wm.invoke_confirm(self, event)
+        else:
+            return self.execute(context)
 
     def execute(self, context):
         datablock = {
