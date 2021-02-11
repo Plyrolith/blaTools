@@ -506,7 +506,16 @@ class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
     bl_label = "Initialize Animation Data"
     bl_options = {'REGISTER', 'UNDO'}
 
-    for_data: bpy.props.BoolProperty(name="Object Data", default=False)
+    data: bpy.props.EnumProperty(
+        items=[
+            ('OBJECT', "Object", "Object"),
+            ('DATA', "Data", "Data"),
+            ('MATERIAL', "Material", "Material"),
+            ('SHADER', "Shader", "Shader")
+        ],
+        name="Data Type",
+        default='OBJECT'
+    )
     clear: bpy.props.BoolProperty(name="Clear", default=False)
 
     @classmethod
@@ -514,12 +523,15 @@ class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
         return context.active_object
 
     def execute(self, context):
-        if self.for_data:
-            item = context.active_object.data
-        else:
-            item = context.active_object
+        datablock = {
+            'OBJECT': context.active_object,
+            'DATA': context.active_object.data,
+            'MATERIAL': context.active_object.active_material,
+            'SHADER': context.active_object.active_material.node_tree
+        }
         if self.clear:
-            item.animation_data_clear()
+            datablock[self.data].animation_data_clear()
         else:
-            item.animation_data_create()
+
+            datablock[self.data].animation_data_create()
         return {"FINISHED"}

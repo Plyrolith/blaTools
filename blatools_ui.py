@@ -19,11 +19,11 @@ class BLATOOLS_PT_PropertiesActionObject(bpy.types.Panel):
             row.template_ID(obj.animation_data, "action")
             if not obj.animation_data.action:
                 obj_clear = row.operator('object.animation_data_init', text="Clear Animation Data", icon='X')
-                obj_clear.for_data = False
+                obj_clear.data = 'OBJECT'
                 obj_clear.clear = True
         else:
             obj_init = row.operator('object.animation_data_init', icon='ANIM_DATA')
-            obj_init.for_data = False
+            obj_init.data = 'OBJECT'
             obj_init.clear = False
 
 class BLATOOLS_PT_PropertiesActionData(bpy.types.Panel):
@@ -47,11 +47,53 @@ class BLATOOLS_PT_PropertiesActionData(bpy.types.Panel):
             row.template_ID(data.animation_data, "action")
             if not data.animation_data.action:
                 data_clear = row.operator('object.animation_data_init', text="Clear Animation Data", icon='X')
-                data_clear.for_data = True
+                data_clear.data = 'DATA'
                 data_clear.clear = True
         else:
             data_init = row.operator('object.animation_data_init', icon='ANIM_DATA')
-            data_init.for_data = True
+            data_init.data = 'DATA'
+            data_init.clear = False
+
+class BLATOOLS_PT_PropertiesActionMaterial(bpy.types.Panel):
+    """Material properties panel to select linked action"""
+    bl_label = "Action"
+    bl_idname = "MATERIAL_PT_actions"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "material"
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object and context.active_object.active_material
+
+    def draw(self, context):
+        mat = context.active_object.active_material
+        layout = self.layout
+
+        row = layout.row(align=True)
+        if mat.animation_data:
+            anim_data = mat.animation_data
+            row.template_ID(anim_data, "action")
+            if not anim_data.action:
+                data_clear = row.operator('object.animation_data_init', text="Clear Material Animation", icon='X')
+                data_clear.data = 'MATERIAL'
+                data_clear.clear = False
+        else:
+            data_init = row.operator('object.animation_data_init', text="Initialize Material Animation Data", icon='ANIM_DATA')
+            data_init.data = 'MATERIAL'
+            data_init.clear = False
+        
+        row = layout.row(align=True)
+        if mat.node_tree.animation_data:
+            anim_data = mat.node_tree.animation_data
+            row.template_ID(anim_data, "action")
+            if not anim_data.action:
+                data_clear = row.operator('object.animation_data_init', text="Clear Shader Animation", icon='X')
+                data_clear.data = 'SHADER'
+                data_clear.clear = False
+        else:
+            data_init = row.operator('object.animation_data_init', text="Initialize Shader Animation Data", icon='ANIM_DATA')
+            data_init.data = 'SHADER'
             data_init.clear = False
 
 class BLATOOLS_PT_ItemActionsPanel(bpy.types.Panel):
@@ -77,11 +119,11 @@ class BLATOOLS_PT_ItemActionsPanel(bpy.types.Panel):
             row.template_ID(obj.animation_data, "action")
             if not obj.animation_data.action:
                 obj_clear = row.operator('object.animation_data_init', text="Clear Object Animation", icon='X')
-                obj_clear.for_data = False
+                obj_clear.data = 'OBJECT'
                 obj_clear.clear = True
         else:
             obj_init = row.operator('object.animation_data_init', text="Initialize Object Animation", icon='ANIM_DATA')
-            obj_init.for_data = False
+            obj_init.data = 'OBJECT'
             obj_init.clear = False
         
         # Data action
@@ -90,12 +132,12 @@ class BLATOOLS_PT_ItemActionsPanel(bpy.types.Panel):
             if obj.data.animation_data:
                 row.template_ID(obj.data.animation_data, "action")
                 if not obj.data.animation_data.action:
-                    data_clear = row.operator('object.animation_data_init', text="Clear Object Animation", icon='X')
-                    data_clear.for_data = True
+                    data_clear = row.operator('object.animation_data_init', text="Clear Data Animation", icon='X')
+                    data_clear.data = 'DATA'
                     data_clear.clear = True
             else:
                 data_init = row.operator('object.animation_data_init', text="Initialize Data Animation", icon='ANIM_DATA')
-                data_init.for_data = True
+                data_init.data = 'DATA'
                 data_init.clear = False
 
 class BLATOOLS_PT_Sceneprep(bpy.types.Panel):
