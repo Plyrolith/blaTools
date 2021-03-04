@@ -2,38 +2,6 @@ import bpy
 
 from . import blatools as bla
 
-class BLATOOLS_OT_HideNonProxyRigs(bpy.types.Operator):
-    """Temporarily Hide all non-Proxy Rigs"""
-    bl_idname = 'view3d.hide_nonproxy_rigs'
-    bl_label = "Hide non-Proxy Rigs"
-    bl_options = {'UNDO'}
-    
-    hide: bpy.props.BoolProperty(name='Hide', default=True)
-
-    @classmethod
-    def poll(cls, context):
-        return bpy.data.libraries
-
-    def execute(self, context):
-        bla.hide_noneproxy_rigs(context, self.hide)
-        return {"FINISHED"}
-
-class BLATOOLS_OT_CameraPassepartoutSet(bpy.types.Operator):
-    """Set Passepartout of active camera"""
-    bl_idname = 'view3d.camera_passepartout_set'
-    bl_label = "Set Passepartout"
-    bl_options = {'UNDO'}
-
-    alpha: bpy.props.FloatProperty(default=1.0)
-
-    @classmethod
-    def poll(cls, context):
-        return context.scene.camera
-
-    def execute(self, context):
-        bla.camera_passepartout_set(context, self.alpha)
-        return {"FINISHED"}
-
 class BLATOOLS_OT_TransformStore(bpy.types.Operator):
     """Store World Transforms for active Pose Bone or Object"""
     bl_idname = 'object.transform_store'
@@ -141,39 +109,6 @@ class BLATOOLS_OT_MotionpathAuto(bpy.types.Operator):
             layout.row().prop(self, 'use_tails')
         if context.scene.use_preview_range:
             layout.row().prop(self, 'use_preview_range')
-
-class BLATOOLS_OT_SceneObjectsLock(bpy.types.Operator):
-    """Lock all object transforms for current scene"""
-    bl_idname = 'view3d.scene_objects_lock'
-    bl_label = "Lock All Object Transforms (Current Scene)"
-    bl_options = {'UNDO'}
-
-    lock: bpy.props.BoolProperty(name='Lock', default=True)
-
-    @classmethod
-    def poll(cls, context):
-        return context.scene.objects
-
-    def execute(self, context):
-        bla.scene_objects_lock(context.scene, self.lock)
-        return {"FINISHED"}
-
-class BLATOOLS_OT_AssetLevelSet(bpy.types.Operator):
-    """Set detail level of linked assets"""
-    bl_idname = 'view3d.asset_level_set'
-    bl_label = "Set Asset Level"
-    bl_options = {'UNDO'}
-
-    asset_level: bpy.props.StringProperty(name="Asset Quality ('LOW', 'MID', 'HIGH')",default='LOW')
-    selected: bpy.props.BoolProperty(name="Selected Only",default=True)
-
-    @classmethod
-    def poll(cls, context):
-        return True
-                
-    def execute(self, context):
-        bla.asset_level_set(context, self.asset_level, self.selected)
-        return {"FINISHED"}
 
 class BLATOOLS_OT_CollectionAlphaSelect(bpy.types.Operator):
     """Select collection for viewport alpha manipulation"""
@@ -408,96 +343,6 @@ class BLATOOLS_OT_SelectionSetUpdateIcon(bpy.types.Operator):
         blatools = context.window_manager.blatools
         context.scene['blatools_selection_sets'][self.selection_set]['icon'] = blatools.selection_sets_icons
         bla.ui_redraw()
-        return {"FINISHED"}
-
-class BLATOOLS_OT_ArmaturesPoseToggle(bpy.types.Operator):
-    """Toggle between active/all Armatures in Pose Mode"""
-    bl_idname = 'pose.armatures_pose_toggle'
-    bl_label = "Toggle Active/all Armatures"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        return context.mode == 'POSE'
-
-    def execute(self, context):
-        blatools = context.window_manager.blatools
-        bla.armatures_pose_toggle(
-            context,
-            blatools.armature_toggle_selection,
-            blatools.armature_toggle_hide
-        )
-        return {"FINISHED"}
-
-class BLATOOLS_OT_CameraGuidesSet(bpy.types.Operator):
-    """Set scene camera guides"""
-    bl_idname = 'view3d.camera_guides_set'
-    bl_label = "Set Scene Camera Guides"
-    bl_options = {'UNDO'}
-    bl_property = "enum_camguides"
-
-    def camguides(self, context):
-        cam = bla.camera_get(context)
-        if cam:
-            guides = [
-                ('SHOW_COMPOSITION_CENTER', "Center", "Center", ('CHECKBOX_DEHLT' if not cam.show_composition_center else 'CHECKBOX_HLT'), 0),
-                ('SHOW_COMPOSITION_CENTER_DIAGONAL', "Center Diagonal", "Center Diagonal", ('CHECKBOX_DEHLT' if not cam.show_composition_center_diagonal else 'CHECKBOX_HLT'), 1),
-                ('SHOW_COMPOSITION_THIRDS', "Thirds", "Thirds", ('CHECKBOX_DEHLT' if not cam.show_composition_thirds else 'CHECKBOX_HLT'), 2),
-                ('SHOW_COMPOSITION_GOLDEN', "Golden Ratio", "Golden Ratio", ('CHECKBOX_DEHLT' if not cam.show_composition_golden else 'CHECKBOX_HLT'), 3),
-                ('SHOW_COMPOSITION_GOLDEN_TRIA_A', "Golden Triangle A", "Golden Triangle A", ('CHECKBOX_DEHLT' if not cam.show_composition_golden_tria_a else 'CHECKBOX_HLT'), 4),
-                ('SHOW_COMPOSITION_GOLDEN_TRIA_B', "Golden Triangle B", "Golden Triangle B", ('CHECKBOX_DEHLT' if not cam.show_composition_golden_tria_b else 'CHECKBOX_HLT'), 5),
-                ('SHOW_COMPOSITION_HARMONY_TRI_B', "Harmonious Triangle A", "Harmonious Triangle A", ('CHECKBOX_DEHLT' if not cam.show_composition_harmony_tri_b else 'CHECKBOX_HLT'), 6),
-                ('SHOW_COMPOSITION_HARMONY_TRI_A', "Harmonious Triangle B", "Harmonious Triangle B", ('CHECKBOX_DEHLT' if not cam.show_composition_harmony_tri_a else 'CHECKBOX_HLT'), 7)
-            ]
-        else:
-            guides = [("","","")]
-        return guides
-    
-    enum_camguides: bpy.props.EnumProperty(name="Guides", items=camguides)
-
-    @classmethod
-    def poll(cls, context):
-        return context.scene.camera
-
-    def execute(self, context):
-        bla.camera_guides_set(context, self.enum_camguides)
-        return {"FINISHED"}
-
-    def invoke(self, context, event):
-        context.window_manager.invoke_search_popup(self)
-        return {'FINISHED'}
-
-class BLATOOLS_OT_CameraBackgroundImages(bpy.types.Operator):
-    """Set scene camera guides"""
-    bl_idname = 'view3d.camera_background_images'
-    bl_label = "Show/Hide Scene Camera Background Images"
-    bl_options = {'UNDO', 'INTERNAL'}
-
-    show_background_images: bpy.props.BoolProperty(name="Show Background Images", default=True)
-
-    @classmethod
-    def poll(cls, context):
-        return bla.camera_get(context)
-
-    def execute(self, context):
-        bla.camera_get(context).show_background_images = self.show_background_images
-        return {"FINISHED"}
-
-class BLATOOLS_OT_OrientationParent(bpy.types.Operator):
-    """Create custom orientation based on active object's/bone's parent"""
-    bl_idname = 'pose.orientation_parent'
-    bl_label = "Orientation to Parent"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        if context.mode == 'POSE':
-            return context.active_pose_bone
-        elif context.mode == 'OBJECT':
-            return context.active_object
-
-    def execute(self, context):
-        bla.orientation_parent(context)
         return {"FINISHED"}
 
 class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):

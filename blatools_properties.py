@@ -30,8 +30,6 @@ class blaToolsSettings(bpy.types.PropertyGroup):
         default='SET')
     collection_alpha_collection: bpy.props.StringProperty(name="Collection",default="")
     collection_alpha: bpy.props.FloatProperty(name="Collection Alpha",min=0.0, max=1.0, default=1.0, soft_min=0.0, soft_max=1.0, update=bla.collection_alpha_set)
-    armature_toggle_hide: bpy.props.BoolProperty(default=True, name="Hide Other Armatures")
-    armature_toggle_selection: bpy.props.BoolProperty(default=True, name="Toggle Selection Only")
     transform_tmp: bpy.props.FloatVectorProperty(
         name='Transform Store',
         description='Temporary Transform Matrix Storage',
