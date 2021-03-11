@@ -234,7 +234,7 @@ class BLATOOLS_OT_SelectionSetDelete(bpy.types.Operator):
     """Delete selection set"""
     bl_idname = 'blatools.selection_sets_delete'
     bl_label = "Delete Selection Set"
-    bl_options = {'UNDO'}
+    bl_options = {'INTERNAL', 'UNDO'}
 
     selection_set: bpy.props.StringProperty()
                 
