@@ -387,3 +387,36 @@ class BLATOOLS_OT_AnimationDataInitialize(bpy.types.Operator):
 
             datablock[self.data].animation_data_create()
         return {"FINISHED"}
+
+class BLATOOLS_OT_FCurvesStepped(bpy.types.Operator):
+    """Create Step Modifiers for all F-Curves"""
+    bl_idname = 'pose.fcurves_stepped'
+    bl_label = "Make Curves Stepped"
+    bl_options = {'UNDO', 'REGISTER'}
+    
+    remove: bpy.props.BoolProperty(name="Remove Modifiers", default=False)
+    frame_step: bpy.props.FloatProperty(name="Step Size", default=2.0)
+    frame_offset: bpy.props.FloatProperty(name="Offset", default=0.0)
+
+    @classmethod
+    def poll(self, context):
+        try:
+            return context.active_object.animation_data.action
+        except AttributeError:
+            return None
+    
+    def execute(self, context):
+        for fcurve in context.active_object.animation_data.action.fcurves:
+            step = None
+            for mod in fcurve.modifiers:
+                if mod.type == 'STEPPED':
+                    if self.remove:
+                        fcurve.modifiers.remove(mod)
+                    else:
+                        step = mod
+            if not step and not self.remove:
+                step = fcurve.modifiers.new('STEPPED')
+            if not self.remove:
+                step.frame_step = self.frame_step
+                step.frame_offset = self.frame_offset
+        return {"FINISHED"}
