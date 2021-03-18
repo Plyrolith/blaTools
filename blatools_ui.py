@@ -201,6 +201,18 @@ class BLATOOLS_PT_ViewportAlpha(bpy.types.Panel):
         row = box.row()
         row.operator('blatools.collection_alpha_reset',text='Reset All Alphas',icon='HIDE_OFF')
 
+class BLATOOLS_PT_AnimationTools(bpy.types.Panel):
+
+    bl_category = "blaTools"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_label = "Animation Tools"
+    #bl_options = {'DEFAULT_CLOSED'}
+    bl_order = 70
+
+    def draw(self,context):
+        layout = self.layout.row().operator('pose.fcurves_stepped', icon='IPO_CONSTANT')
+
 class BLATOOLS_PT_SelectionSetsOptions(bpy.types.Panel):
 
     bl_category = "blaTools"
